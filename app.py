@@ -40,7 +40,7 @@ def pre_proc(data):
 
 app = Flask(__name__, template_folder='templates')
 
-# Load the pre-trained model and TF-IDF vectorizer
+# Loading pre-trained model and TF-IDF vectorizer
 base_path = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(base_path, 'models', 'spam_predictor.pkl')
 vectorizer_path = os.path.join(base_path, 'models', 'tfidf_vectorizer.pkl')
