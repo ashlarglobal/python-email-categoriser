@@ -1,0 +1,63 @@
+.box {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 50px 100px 50px 100px;
+}
+
+/* Left Element CSS */
+
+.left-element {
+    flex: 1;
+    justify-content: center;
+}
+
+.left-element h4 {
+    flex: 1;
+    padding-bottom: 10px;
+
+}
+
+.left-element textarea {
+    margin-bottom: 5px;
+}
+
+.description {
+    justify-content: center;
+    align-items: center;
+    margin: 50px 200px 50px 200px;
+    padding: 5px;
+}
+
+.description h1 {
+    align-items: center;
+    text-align: center;
+    padding: 5px;
+}
+
+.left-element .btn {
+    margin: 10px auto;
+    display: block;
+}
+
+input[type='text'] {
+    font-family: 'Lato', sans-serif;
+}
+
+/* Right Element CSS */
+
+.right-element {
+    flex: 1;
+    padding-right: 100px;
+    padding-left: 100px;
+}
+

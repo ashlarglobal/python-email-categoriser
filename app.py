@@ -1,6 +1,7 @@
 import pandas as pd
 import re # Regex functions
 import joblib
+import math
 import os
 
 # Flask libraries
@@ -8,6 +9,7 @@ from flask import Flask, render_template,url_for,request
 
 # Model Libraries
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
 
 # Text preprocessing libraries
 from nltk.corpus import stopwords
@@ -38,7 +40,7 @@ def pre_proc(data):
     text = text.replace('textplain', '')
     return text
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='templateFiles', static_folder='staticFiles')
 
 # Load the pre-trained model and TF-IDF vectorizer
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -49,20 +51,26 @@ vectorizer = joblib.load(vectorizer_path)
 
 @app.route('/')
 def page():
-    return render_template('page.html')
+    return render_template('test.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
         email = request.form['email']
         if not email:
-            return render_template('page.html', error_message='Please enter an email.')
+            return render_template('test.html', error_message='Please enter an email.')
         else:
-            clean_text = pre_proc(email)
+            count_of_words = len(email.split()) # Counting number of words
+            
+            clean_text = pre_proc(email) # Pre-processing of text
             processed_text = lemmatize_words(rmv_stopwords(clean_text))
             string_vectorized = vectorizer.transform([processed_text])
             my_prediction = model.predict(string_vectorized)
-    return render_template('page.html', prediction=my_prediction)
+            
+            probability = model.predict_proba(string_vectorized)[0][1]  # Probability of being spam
+            percentage = round(probability * 100, 2) # Percentage of being spam
+            
+    return render_template('test.html', prediction=my_prediction,  percentage=percentage, result=count_of_words)
 
 if __name__ == '__main__':
     app.run(debug=True)
