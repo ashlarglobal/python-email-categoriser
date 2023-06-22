@@ -132,13 +132,11 @@ def generate_html_with_highlights(text, emotions):
 
     highlighted_tokens = []
     for i, token in enumerate(tokens):
-        if token.isalpha():
+        if any(token.lower() in word_list or token.capitalize() in word_list for word_list in emotions.values()):
             for emotion, word_list in emotions.items():
-                if token.lower() in word_list:
+                if token.lower() in word_list or token.capitalize() or token.upper() in word_list in word_list:
                     highlighted_tokens.append(f'<mark style="background-color:{emotion_colors[emotion]}">{token}</mark>')
                     break
-            else:
-                highlighted_tokens.append(token)
         else:
             highlighted_tokens.append(token)
 
