@@ -8,14 +8,36 @@
 }
 
 .container {
+    padding-top: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 50px 100px 50px 100px;
+    margin: 50px 0;
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.left-element,
+.right-element {
+    padding-left: 250px;
+}
+
+/* Description */
+.description {
+    margin: 50px 100px;
+}
+
+.description h1 {
+    align-items: center;
+    text-align: center;
+    padding: 5px;
 }
 
 /* Left Element CSS */
-
 .left-element {
     flex: 1;
     justify-content: center;
@@ -24,24 +46,10 @@
 .left-element h4 {
     flex: 1;
     padding-bottom: 10px;
-
 }
 
 .left-element textarea {
     margin-bottom: 5px;
-}
-
-.description {
-    justify-content: center;
-    align-items: center;
-    margin: 50px 200px 50px 200px;
-    padding: 5px;
-}
-
-.description h1 {
-    align-items: center;
-    text-align: center;
-    padding: 5px;
 }
 
 .left-element .btn {
@@ -54,10 +62,85 @@ input[type='text'] {
 }
 
 /* Right Element CSS */
-
 .right-element {
     flex: 1;
-    padding-right: 100px;
-    padding-left: 100px;
+    padding-left: 60px;
 }
 
+/* styles.css */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+th {
+    background-color: #f7f7f7;
+}
+
+/* Legend Box Table Styling */
+.legend-box table {
+    width: 5%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.legend-box th,
+.legend-box td {
+    padding: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+.legend-box th {
+    background-color: #f7f7f7;
+}
+
+/* Highlighting Area */
+.box-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    margin-left: 100px;
+    margin-right: 100px;
+}
+
+.box-text .legend-box {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.box-text .highlighted-text {
+    flex: 1;
+    align-items: right;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    background-color: #343a40;
+    color: #fff;
+    padding: 20px 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+}
