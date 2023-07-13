@@ -47,33 +47,14 @@ lemmatizer = WordNetLemmatizer()
 
 # Dictionary to map emotions to CSS color values
 emotion_colors = {
-    'admiration': '#BD62FF',
-    'amusement': '#FFF17B',
-    'anger': '#FF6B6B',
-    'annoyance': '#FFA954',
-    'approval': '#7DFF7D',
-    'caring': '#FFD4E8',
-    'confusion': '#E0E0E0',
-    'curiosity': '#A2CDFF',
-    'desire': '#FF6F85',
-    'disappointment': '#BEBEBE',
-    'disapproval': '#724BA3',
-    'disgust': '#B8C375',
-    'embarrassment': '#FF9CC6',
-    'excitement': '#FFC65C',
-    'fear': '#936DBF',
-    'gratitude': '#FFEE8C',
-    'grief': '#3B40A3',
-    'joy': '#FFF960',
-    'love': '#FF7878',
-    'nervousness': '#CDDFF0',
-    'optimism': '#B8E2FA',
-    'pride': '#FFEE8C',
-    'realization': '#FFFFB3',
-    'relief': '#8FFF8F',
-    'remorse': '#5DA5A5',
-    'sadness': '#BEBEBE',
-    'surprise': '#FF9AFF'
+    'affectionate': '#FF9AFF',
+    'energetic': '#CCFF99',
+    'contentment': '#FFA954',
+    'irritated': '#FF7878',
+    'sorrowful': '#A2CDFF',
+    'inquisitive': '#7DFF7D',
+    'reflective': '#5DA5A5',
+    'apprehensive': '#724BA3'
 }
 
 #================================================================================================================================#
@@ -124,6 +105,39 @@ def process_text_emotions(processed_text):
     emotion_lists = {key: value for key, value in emotion_lists.items() if value}
     return emotion_lists
 
+# Function for Grouping emotions
+def create_reduced_emotions(emotion_lists):
+    reduced_emotions = {
+        'affectionate': [],
+        'energetic': [],
+        'contentment': [],
+        'irritated': [],
+        'sorrowful': [],
+        'inquisitive': [],
+        'reflective': [],
+        'apprehensive': []
+    }
+
+    for emotion, words in emotion_lists.items():
+        if emotion in ['love', 'admiration', 'caring', 'gratitude', 'desire', 'pride']:
+            reduced_emotions['affectionate'].extend(words)
+        elif emotion in ['joy', 'excitement', 'amusement', 'optimism', 'surprise']:
+            reduced_emotions['energetic'].extend(words)
+        elif emotion in ['approval', 'relief']:
+            reduced_emotions['contentment'].extend(words)
+        elif emotion in ['anger', 'disapproval', 'annoyance', 'disgust']:
+            reduced_emotions['irritated'].extend(words)
+        elif emotion in ['grief', 'sadness', 'remorse']:
+            reduced_emotions['sorrowful'].extend(words)
+        elif emotion in ['curiosity', 'confusion']:
+            reduced_emotions['inquisitive'].extend(words)
+        elif emotion in ['realization', 'disappointment', 'embarrassment']:
+            reduced_emotions['reflective'].extend(words)
+        elif emotion in ['fear', 'nervousness']:
+            reduced_emotions['apprehensive'].extend(words)
+            
+    return reduced_emotions
+
 # Function to generate the highlighted HTML text
 def generate_html_with_highlights(text, emotions):
     # Split text into words and punctuation marks
@@ -132,9 +146,9 @@ def generate_html_with_highlights(text, emotions):
 
     highlighted_tokens = []
     for i, token in enumerate(tokens):
-        if any(token.lower() in word_list or token.capitalize() in word_list for word_list in emotions.values()):
+        if any(token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list for word_list in emotions.values()):
             for emotion, word_list in emotions.items():
-                if token.lower() in word_list or token.capitalize() or token.upper() in word_list in word_list:
+                if token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list:
                     highlighted_tokens.append(f'<mark style="background-color:{emotion_colors[emotion]}">{token}</mark>')
                     break
         else:
@@ -152,15 +166,14 @@ def generate_html_with_highlights(text, emotions):
 # Route for the main page
 @app.route('/')
 def page():
-    return render_template('testing.html')
+    return render_template('test.html')
 
-# Route for the prediction
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
         email = request.form['email']
         if not email:
-            return render_template('testing.html', error_message='Please enter an email.')
+            return render_template('test.html', error_message='Please enter an email.')
         else:
             count_of_words = len(email.split())
 
@@ -169,7 +182,7 @@ def predict():
             sorted_labels = sort_emo(result)  # Sorting in Descending order; extracts top 5 labels
 
             # Clean the text
-            clean_text = clean_html(email)
+            clean_text = clean_html(email) 
             processed_text = clean_string(clean_text)
 
             # Perform Spam Detection prediction
@@ -193,16 +206,24 @@ def predict():
             # Zipping the lists together
             emo_data = zip(capitalized_labels, scores)
             
-            # Process text emotions
-            emotion_lists = process_text_emotions(processed_text)
-
-            # Generate highlighted HTML text
-            highlighted_text = generate_html_with_highlights(email, emotion_lists)
-
-            return render_template('testing.html', prediction=my_prediction, percentage=percentage, result=count_of_words, email=email, emo_data=emo_data, highlighted_text=highlighted_text)  # Pass the email value back to the template
-
+            return render_template('test.html', prediction=my_prediction, percentage=percentage, result=count_of_words, email=email, emo_data=emo_data)  # Pass the email value back to the template
     # For GET request or if no form submission has occurred
-    return render_template('testing.html', email='')  # Pass an empty string as the email value
+    return render_template('test.html', email='')  # Pass an empty string as the email value
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/highlight_text', methods=['POST']) 
+def highlight_text():
+	if request.method == 'POST': 
+		email = request.form['email'] 
+	
+	# Perform necessary processing to generate highlighted text
+	processed_text = clean_string(clean_html(email))
+	emotion_lists = process_text_emotions(processed_text)
+	reduced_emotions = create_reduced_emotions(emotion_lists)
+	highlighted_text = generate_html_with_highlights(email, reduced_emotions)
+	
+	return render_template('test.html', highlighted_text=highlighted_text, email=email)
+
+# Handle cases where the request method is not POST 
+if __name__ == '__main__': 
+	app.run(debug=True)
+

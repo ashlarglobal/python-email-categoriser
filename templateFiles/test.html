@@ -45,24 +45,22 @@
                 <form action="{{url_for('predict')}}" method="POST">
                     <h4>Copy/paste an email message to detect spam</h4>
                     <br>
-                    <textarea id="email" name="email" rows="11"
-                        cols="70">{{ request.form.email if request.method == 'POST' else '' }}</textarea>
+                    <textarea id="email" name="email" rows="11" cols="70">{{ request.form.email if request.method == 'POST' else '' }}</textarea>
                     <br>
-                    <input type="submit" name="" value="Analyze" class="btn btn-info" />
-
+                    <div style="text-align: center;">
+                <input type="submit" name="" value="Analyze" class="btn btn-info" style="display: inline-block; width: 100px;" />
+                <input type="button" id="highlight-btn" value="Highlight" class="btn btn-info" style="display: inline-block; width: 100px;" onclick="highlightText();" />
+            </div>
                 </form>
             </div>
         </div>
 
         <div class="right-element">
             <div class="result box">
-                <h5>Prediction {% if prediction is defined %} {% if prediction == 1 %} <span
-                        style="color: red;">Spam</span>
-                    {% elif prediction == 0 %}
-                    <span style="color: green;">Not Spam</span> {% endif %} {% endif %}
-                </h5>
-                <h5>Spam Probability {{percentage}} %</h5>
-                <h5>Word Count {{result}}</h5>
+                <h5>Prediction {% if prediction == 1 %}<span style="color: red;">Spam</span>{% elif prediction == 0 %}
+                    <span style="color: green;">Not Spam</span>{% endif %}</h5>
+                <h5>Spam Probability {{ percentage }} %</h5>
+                <h5>Word Count {{ result }}</h5>
                 <br>
                 <h5>Emotional Analysis:</h5>
                 <table class="table">
@@ -91,74 +89,28 @@
             <h3>Legend</h3>
             <table>
                 <tr>
-                    <td style="background: #BD62FF;"></td>
-                    <td>Admiration</td>
-                    <td style="background: #FFF17B;"></td>
-                    <td>Amusement</td>
-                    <td style="background: #FF6B6B;"></td>
-                    <td>Anger</td>
-                    <td style="background: #FFA954;"></td>
-                    <td>Annoyance</td>
+                    <td style="background: #FF9AFF;"></td>
+                    <td style="padding-right: 20px;">Affectionate</td>
+                    <td style="background: #CCFF99;"></td>
+                    <td>Energetic</td>
                 </tr>
                 <tr>
-                    <td style="background: #7DFF7D;"></td>
-                    <td>Approval</td>
-                    <td style="background: #FFD4E8;"></td>
-                    <td>Caring</td>
-                    <td style="background: #E0E0E0;"></td>
-                    <td>Confusion</td>
-                    <td style="background: #A2CDFF;"></td>
-                    <td>Curiosity</td>
-                </tr>
-                <tr>
-                    <td style="background: #FF6F85;"></td>
-                    <td>Desire</td>
-                    <td style="background: #BEBEBE;"></td>
-                    <td>Disappointment</td>
-                    <td style="background: #724BA3;"></td>
-                    <td>Disapproval</td>
-                    <td style="background: #B8C375;"></td>
-                    <td>Disgust</td>
-                </tr>
-                <tr>
-                    <td style="background: #FF9CC6;"></td>
-                    <td>Embarrassment</td>
-                    <td style="background: #FFC65C;"></td>
-                    <td>Excitement</td>
-                    <td style="background: #936DBF;"></td>
-                    <td>Fear</td>
-                    <td style="background: #FFEE8C;"></td>
-                    <td>Gratitude</td>
-                </tr>
-                <tr>
-                    <td style="background: #3B40A3;"></td>
-                    <td>Grief</td>
-                    <td style="background: #FFF960;"></td>
-                    <td>Joy</td>
                     <td style="background: #FF7878;"></td>
-                    <td>Love</td>
-                    <td style="background: #CDDFF0;"></td>
-                    <td>Nervousness</td>
+                    <td style="padding-right: 20px;">Annoyance</td>
+                    <td style="background: #FFA954;"></td>
+                    <td>Contentment</td>
                 </tr>
                 <tr>
-                    <td style="background: #B8E2FA;"></td>
-                    <td>Optimism</td>
-                    <td style="background: #FFEE8C;"></td>
-                    <td>Pride</td>
-                    <td style="background: #FFFFB3;"></td>
-                    <td>Realization</td>
-                    <td style="background: #8FFF8F;"></td>
-                    <td>Relief</td>
+                    <td style="background: #A2CDFF;"></td>
+                    <td style="padding-right: 20px;">Sadness</td>
+                    <td style="background: #7DFF7D;"></td>
+                    <td>Inquisitive</td>
                 </tr>
                 <tr>
                     <td style="background: #5DA5A5;"></td>
-                    <td>Remorse</td>
-                    <td style="background: #aac72a;"></td>
-                    <td>Sadness</td>
-                    <td style="background: #FF9AFF;"></td>
-                    <td>Surprise</td>
-                    <td></td>
-                    <td></td>
+                    <td style="padding-right: 20px;">Reflective</td>
+                    <td style="background: #724BA3;"></td>
+                    <td>Apprehensive</td>
                 </tr>
             </table>
         </div>
@@ -166,8 +118,19 @@
         <div class="highlighted-text">
             <h3>Highlighted text for Emotions</h3>
             <p>{{ highlighted_text | safe }}</p>
+        
+            <form action="{{ url_for('highlight_text') }}" method="post" id="highlight-form">
+                <input type="hidden" name="email" value="{{ email }}">
+            </form>
         </div>
     </section>
+    
+    <script>
+        function highlightText() 
+        {
+            document.getElementById('highlight-form').submit();
+        }
+    </script>
 
     <footer class="py-3 mt-4 bg-dark ">
         <ul class="nav justify-content-center border-bottom pb-3 mb-0">
