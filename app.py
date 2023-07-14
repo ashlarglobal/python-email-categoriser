@@ -7,9 +7,10 @@ import math
 import os
 import string
 import warnings
+import json
 warnings.filterwarnings("ignore")
 
-from flask import Flask, render_template, url_for, request
+from flask import Flask, render_template, url_for, request, jsonify
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from nltk.corpus import stopwords
@@ -44,7 +45,16 @@ stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
 
 #================================================================================================================================#
+# Declaring Global Variables
 
+prediction = None
+percentage = None
+result = None
+email = None
+emo_data = None
+highlighted_text = None
+
+#================================================================================================================================#
 # Dictionary to map emotions to CSS color values
 emotion_colors = {
     'affectionate': '#FF9AFF',
@@ -66,12 +76,21 @@ def clean_html(html):
         data.decompose()
     return ' '.join(soup.stripped_strings)
 
-# Function to clean and lemmatize the string
-def clean_string(text, stem='Spacy'):
+# For truncating the tokens
+def truncate_text(text, max_tokens):
+    tokenizer = pipeline('sentiment-analysis').tokenizer
+    encoded_text = tokenizer(text, truncation=True, max_length=max_tokens, padding='longest')
+    truncated_text = tokenizer.decode(encoded_text['input_ids'][0], skip_special_tokens=True)
+    return truncated_text
+
+# Function to clean and lemmatize the string with token limit
+def clean_string(text, max_tokens, stem='Spacy'):
     lemmatizer = WordNetLemmatizer()
     clean_text = re.sub(r'\s+', ' ', text)
-    clean_text = ' '.join([lemmatizer.lemmatize(word) for word in clean_text.split() if word not in stopwords.words('english')])
-    return clean_text
+    tokenized_text = word_tokenize(clean_text)
+    truncated_tokens = tokenized_text[:max_tokens]
+    truncated_text = ' '.join([lemmatizer.lemmatize(word) for word in truncated_tokens if word not in stop_words])
+    return truncated_text
 
 # Function to sort out Emotional Labels
 def sort_emo(result):
@@ -166,28 +185,32 @@ def generate_html_with_highlights(text, emotions):
 # Route for the main page
 @app.route('/')
 def page():
-    return render_template('test.html')
+    return render_template('testing.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.json['email']
         if not email:
-            return render_template('test.html', error_message='Please enter an email.')
+            return json.dumps({'error': 'Please enter an email.'})
         else:
             count_of_words = len(email.split())
 
+            # Truncate email text to 512 tokens
+            truncated_text = clean_string(email, max_tokens=512)
+            
             # Perform Emotional Analysis
-            result = emotion(email)  # Emotional Analysis Labels
+            result = emotion(truncated_text)  # Emotional Analysis Labels
             sorted_labels = sort_emo(result)  # Sorting in Descending order; extracts top 5 labels
 
             # Clean the text
-            clean_text = clean_html(email) 
-            processed_text = clean_string(clean_text)
+            clean_text = clean_html(email)
+            processed_text = clean_string(clean_text, max_tokens=512)
 
             # Perform Spam Detection prediction
             string_vectorized = vectorizer.transform([processed_text])
             my_prediction = model.predict(string_vectorized)
+            my_prediction = my_prediction.tolist()  # Convert ndarray to list
             probability = model.predict_proba(string_vectorized)[0][1]
             percentage = round(probability * 100, 2)
 
@@ -205,25 +228,28 @@ def predict():
 
             # Zipping the lists together
             emo_data = zip(capitalized_labels, scores)
-            
-            return render_template('test.html', prediction=my_prediction, percentage=percentage, result=count_of_words, email=email, emo_data=emo_data)  # Pass the email value back to the template
-    # For GET request or if no form submission has occurred
-    return render_template('test.html', email='')  # Pass an empty string as the email value
 
-@app.route('/highlight_text', methods=['POST']) 
+            # Return the result box HTML content as JSON
+            return json.dumps({
+                'prediction': my_prediction,
+                'percentage': percentage,
+                'result': count_of_words,
+                'emo_data': list(emo_data)
+            })
+
+@app.route('/highlight_text', methods=['POST'])
 def highlight_text():
-	if request.method == 'POST': 
-		email = request.form['email'] 
-	
-	# Perform necessary processing to generate highlighted text
-	processed_text = clean_string(clean_html(email))
-	emotion_lists = process_text_emotions(processed_text)
-	reduced_emotions = create_reduced_emotions(emotion_lists)
-	highlighted_text = generate_html_with_highlights(email, reduced_emotions)
-	
-	return render_template('test.html', highlighted_text=highlighted_text, email=email)
+    if request.method == 'POST':
+        email = request.json['email']
+        
+        # Perform necessary processing to generate highlighted text
+        processed_text = clean_string(clean_html(email), max_tokens=512)
+        emotion_lists = process_text_emotions(processed_text)
+        reduced_emotions = create_reduced_emotions(emotion_lists)
+        highlighted_text = generate_html_with_highlights(email, reduced_emotions)
+        
+        return highlighted_text
 
 # Handle cases where the request method is not POST 
 if __name__ == '__main__': 
 	app.run(debug=True)
-

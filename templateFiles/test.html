@@ -5,14 +5,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spam Detect</title>
-    <link href='https://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='testing.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='testing.css') }}" />
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #21C9D4;">
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #21c9d4">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Spam Detect</a>
             <button class="navbar-toggler" type="button" data-mdb-toggle="collapse"
@@ -32,36 +32,44 @@
 
     <section class="description box">
         <h1>Spam Detection</h1>
-        <p>This project uses machine learning algorithms like Naïve Bayes to classify emails as either spam or
-            legitimate. By implementing preprocessing techniques such as Count Vectorizer and TF-IDF Vectorizer, the
-            project aims to accurately differentiate between the two types of emails. The trained model provides an
-            efficient solution for automatically filtering and categorizing incoming emails, enhancing productivity and
-            minimizing the impact of spam.</p>
+        <p>
+            This project uses machine learning algorithms like Naïve Bayes to
+            classify emails as either spam or legitimate. By implementing
+            preprocessing techniques such as Count Vectorizer and TF-IDF Vectorizer,
+            the project aims to accurately differentiate between the two types of
+            emails. The trained model provides an efficient solution for
+            automatically filtering and categorizing incoming emails, enhancing
+            productivity and minimizing the impact of spam.
+        </p>
     </section>
 
     <section class="container">
         <div class="left-element">
             <div class="big box">
-                <form action="{{url_for('predict')}}" method="POST">
+                <form id="emailForm">
                     <h4>Copy/paste an email message to detect spam</h4>
-                    <br>
+                    <br />
                     <textarea id="email" name="email" rows="11" cols="70">{{ request.form.email if request.method == 'POST' else '' }}</textarea>
-                    <br>
-                    <div style="text-align: center;">
-                <input type="submit" name="" value="Analyze" class="btn btn-info" style="display: inline-block; width: 100px;" />
-                <input type="button" id="highlight-btn" value="Highlight" class="btn btn-info" style="display: inline-block; width: 100px;" onclick="highlightText();" />
-            </div>
+                    <br />
+                    <div style="text-align: center">
+                        <input type="button" id="analyze-btn" value="Analyze" class="btn btn-info"
+                            style="display: inline-block; width: 100px" />
+                        <input type="button" id="highlight-btn" value="Highlight" class="btn btn-info"
+                            style="display: inline-block; width: 100px" />
+                    </div>
                 </form>
             </div>
         </div>
 
         <div class="right-element">
-            <div class="result box">
-                <h5>Prediction {% if prediction == 1 %}<span style="color: red;">Spam</span>{% elif prediction == 0 %}
-                    <span style="color: green;">Not Spam</span>{% endif %}</h5>
+            <div id="result-box-section" class="result box">
+                <h5>
+                    Prediction {% if prediction == 1 %}<span style="color: red">Spam</span>{% elif prediction == 0 %}
+                    <span style="color: green">Not Spam</span>{% endif %}
+                </h5>
                 <h5>Spam Probability {{ percentage }} %</h5>
                 <h5>Word Count {{ result }}</h5>
-                <br>
+                <br />
                 <h5>Emotional Analysis:</h5>
                 <table class="table">
                     <thead>
@@ -83,66 +91,146 @@
         </div>
     </section>
 
-
     <section class="box-text">
         <div class="legend-box">
             <h3>Legend</h3>
             <table>
                 <tr>
-                    <td style="background: #FF9AFF;"></td>
-                    <td style="padding-right: 20px;">Affectionate</td>
-                    <td style="background: #CCFF99;"></td>
+                    <td style="background: #ff9aff"></td>
+                    <td style="padding-right: 20px">Affectionate</td>
+                    <td style="background: #ccff99"></td>
                     <td>Energetic</td>
                 </tr>
                 <tr>
-                    <td style="background: #FF7878;"></td>
-                    <td style="padding-right: 20px;">Annoyance</td>
-                    <td style="background: #FFA954;"></td>
+                    <td style="background: #ff7878"></td>
+                    <td style="padding-right: 20px">Annoyance</td>
+                    <td style="background: #ffa954"></td>
                     <td>Contentment</td>
                 </tr>
                 <tr>
-                    <td style="background: #A2CDFF;"></td>
-                    <td style="padding-right: 20px;">Sadness</td>
-                    <td style="background: #7DFF7D;"></td>
+                    <td style="background: #a2cdff"></td>
+                    <td style="padding-right: 20px">Sadness</td>
+                    <td style="background: #7dff7d"></td>
                     <td>Inquisitive</td>
                 </tr>
                 <tr>
-                    <td style="background: #5DA5A5;"></td>
-                    <td style="padding-right: 20px;">Reflective</td>
-                    <td style="background: #724BA3;"></td>
+                    <td style="background: #5da5a5"></td>
+                    <td style="padding-right: 20px">Reflective</td>
+                    <td style="background: #724ba3"></td>
                     <td>Apprehensive</td>
                 </tr>
             </table>
         </div>
 
-        <div class="highlighted-text">
+        <div id="highlighted-text-section" class="highlighted-text">
             <h3>Highlighted text for Emotions</h3>
-            <p>{{ highlighted_text | safe }}</p>
-        
+            <p id="highlighted-text"></p>
+
             <form action="{{ url_for('highlight_text') }}" method="post" id="highlight-form">
-                <input type="hidden" name="email" value="{{ email }}">
+                <input type="hidden" name="email" value="{{ email }}" />
             </form>
         </div>
     </section>
-    
+
     <script>
-        function highlightText() 
-        {
-            document.getElementById('highlight-form').submit();
+        document.addEventListener("DOMContentLoaded", function () {
+            document
+                .getElementById("analyze-btn")
+                .addEventListener("click", analyzeEmail);
+            document
+                .getElementById("highlight-btn")
+                .addEventListener("click", highlightText);
+        });
+
+        function analyzeEmail() {
+            var email = document.getElementById("email").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/predict", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var resultBoxSection =
+                        document.getElementById("result-box-section");
+                    var predictionText =
+                        response.prediction[0] === 1
+                            ? '<span style="color: red;">Spam</span>'
+                            : '<span style="color: green;">Not Spam</span>';
+                    var spamProbabilityText =
+                        "Spam Probability " + response.percentage + " %";
+                    var wordCountText = "Word Count " + response.result;
+                    var emoData = response.emo_data;
+                    var emoDataTable = generateEmoDataTable(emoData);
+
+                    resultBoxSection.innerHTML =
+                        "<h5>Prediction " +
+                        predictionText +
+                        "</h5>" +
+                        "<h5>" +
+                        spamProbabilityText +
+                        "</h5>" +
+                        "<h5>" +
+                        wordCountText +
+                        "</h5>" +
+                        "<br>" +
+                        "<h5>Emotional Analysis:</h5>" +
+                        emoDataTable;
+                }
+            };
+            xhr.send(JSON.stringify({ email: email }));
+        }
+
+        function highlightText() {
+            var email = document.getElementById("email").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/highlight_text", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var highlightedText = document.getElementById("highlighted-text");
+                    highlightedText.innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send(JSON.stringify({ email: email }));
+        }
+
+
+        function generateEmoDataTable(emoData) {
+            var tableHtml =
+                '<table class="table"><thead><tr><th>Emotion Label</th><th>Score</th></tr></thead><tbody>';
+
+            for (var i = 0; i < emoData.length; i++) {
+                var label = emoData[i][0];
+                var score = emoData[i][1];
+                tableHtml += "<tr><td>" + label + "</td><td>" + score + "%</td></tr>";
+            }
+
+            tableHtml += "</tbody></table>";
+            return tableHtml;
         }
     </script>
 
-    <footer class="py-3 mt-4 bg-dark ">
+    <footer class="py-3 mt-4 bg-dark">
         <ul class="nav justify-content-center border-bottom pb-3 mb-0">
-            <li class="nav-item"><a href="https://ashlarglobal.com" class="nav-link px-2 text-white">Home</a></li>
-            <li class="nav-item"><a href="#" class="nav-link px-2 text-white">Features</a></li>
-            <li class="nav-item"><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
-            <li class="nav-item"><a href="https://ashlarglobal.com/about.html"
-                    class="nav-link px-2 text-white">About</a></li>
-            <li class="nav-item"><a href="https://ashlarglobal.com/contact.html"
-                    class="nav-link px-2 text-white">Contact</a></li>
+            <li class="nav-item">
+                <a href="https://ashlarglobal.com" class="nav-link px-2 text-white">Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-white">Features</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-white">FAQs</a>
+            </li>
+            <li class="nav-item">
+                <a href="https://ashlarglobal.com/about.html" class="nav-link px-2 text-white">About</a>
+            </li>
+            <li class="nav-item">
+                <a href="https://ashlarglobal.com/contact.html" class="nav-link px-2 text-white">Contact</a>
+            </li>
         </ul>
-        <p class="text-center text-white">&copy; 2023 Spam Detect. All rights reserved.</p>
+        <p class="text-center text-white">
+            &copy; 2023 Spam Detect. All rights reserved.
+        </p>
     </footer>
 </body>
 
