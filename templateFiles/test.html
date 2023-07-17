@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spam Detect</title>
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='testing.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='test.css') }}" />
 </head>
 
 <body>
@@ -44,12 +46,14 @@
     </section>
 
     <section class="container">
+        <!-- Input Field for Email -->
         <div class="left-element">
             <div class="big box">
                 <form id="emailForm">
                     <h4>Copy/paste an email message to detect spam</h4>
                     <br />
-                    <textarea id="email" name="email" rows="11" cols="70">{{ request.form.email if request.method == 'POST' else '' }}</textarea>
+                    <textarea id="email" name="email" rows="11"
+                        cols="70">{{ request.form.email if request.method == 'POST' else '' }}</textarea>
                     <br />
                     <div style="text-align: center">
                         <input type="button" id="analyze-btn" value="Analyze" class="btn btn-info"
@@ -60,7 +64,7 @@
                 </form>
             </div>
         </div>
-
+        <!-- Analysis Box for the Email (Prediction, Emotional Context) -->
         <div class="right-element">
             <div id="result-box-section" class="result box">
                 <h5>
@@ -92,6 +96,7 @@
     </section>
 
     <section class="box-text">
+        <!-- Legend Box of Highlights -->
         <div class="legend-box">
             <h3>Legend</h3>
             <table>
@@ -121,11 +126,11 @@
                 </tr>
             </table>
         </div>
-
+        <!-- Highlighting Text -->
         <div id="highlighted-text-section" class="highlighted-text">
             <h3>Highlighted text for Emotions</h3>
-            <p id="highlighted-text"></p>
-
+            <br>
+            <pre id="highlighted-text" style="white-space: pre-wrap;">{{ highlighted_text }}</pre>
             <form action="{{ url_for('highlight_text') }}" method="post" id="highlight-form">
                 <input type="hidden" name="email" value="{{ email }}" />
             </form>
@@ -134,34 +139,31 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document
-                .getElementById("analyze-btn")
-                .addEventListener("click", analyzeEmail);
-            document
-                .getElementById("highlight-btn")
-                .addEventListener("click", highlightText);
+            document.getElementById("analyze-btn").addEventListener("click", analyzeEmail);
+            document.getElementById("highlight-btn").addEventListener("click", highlightText);
         });
-
         function analyzeEmail() {
             var email = document.getElementById("email").value;
+            var analyzeBtn = document.getElementById("analyze-btn");
+            // Loading animation class
+            analyzeBtn.value = 'Loading...';
+            analyzeBtn.disabled = true;
+            // AJAX Function
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/predict", true);
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var response = JSON.parse(xhr.responseText);
-                    var resultBoxSection =
-                        document.getElementById("result-box-section");
+                    var resultBoxSection = document.getElementById("result-box-section");
                     var predictionText =
                         response.prediction[0] === 1
                             ? '<span style="color: red;">Spam</span>'
                             : '<span style="color: green;">Not Spam</span>';
-                    var spamProbabilityText =
-                        "Spam Probability " + response.percentage + " %";
+                    var spamProbabilityText = "Spam Probability " + response.percentage + " %";
                     var wordCountText = "Word Count " + response.result;
                     var emoData = response.emo_data;
                     var emoDataTable = generateEmoDataTable(emoData);
-
                     resultBoxSection.innerHTML =
                         "<h5>Prediction " +
                         predictionText +
@@ -175,6 +177,9 @@
                         "<br>" +
                         "<h5>Emotional Analysis:</h5>" +
                         emoDataTable;
+                    // Removing loading animation class
+                    analyzeBtn.value = 'Analyze';
+                    analyzeBtn.disabled = false;
                 }
             };
             xhr.send(JSON.stringify({ email: email }));
@@ -182,6 +187,11 @@
 
         function highlightText() {
             var email = document.getElementById("email").value;
+            var highlightBtn = document.getElementById("highlight-btn");
+            // Loading animation class
+            highlightBtn.value = 'Loading...';
+            highlightBtn.disabled = true;
+            // AJAX Function
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/highlight_text", true);
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -189,22 +199,22 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var highlightedText = document.getElementById("highlighted-text");
                     highlightedText.innerHTML = xhr.responseText;
+                    // Remove the loading animation class
+                    highlightBtn.value = 'Highlight';
+                    highlightBtn.disabled = false;
                 }
             };
             xhr.send(JSON.stringify({ email: email }));
         }
 
-
         function generateEmoDataTable(emoData) {
             var tableHtml =
                 '<table class="table"><thead><tr><th>Emotion Label</th><th>Score</th></tr></thead><tbody>';
-
             for (var i = 0; i < emoData.length; i++) {
                 var label = emoData[i][0];
                 var score = emoData[i][1];
                 tableHtml += "<tr><td>" + label + "</td><td>" + score + "%</td></tr>";
             }
-
             tableHtml += "</tbody></table>";
             return tableHtml;
         }

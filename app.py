@@ -10,6 +10,13 @@ import warnings
 import json
 warnings.filterwarnings("ignore")
 
+# Filter out the NumPy warning
+warnings.filterwarnings("ignore", category=UserWarning, module="numpy._distributor_init")
+
+# Filter out the TensorFlow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
+warnings.filterwarnings("ignore", category=FutureWarning, module="tensorflow")
+
 from flask import Flask, render_template, url_for, request, jsonify
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -83,14 +90,18 @@ def truncate_text(text, max_tokens):
     truncated_text = tokenizer.decode(encoded_text['input_ids'][0], skip_special_tokens=True)
     return truncated_text
 
-# Function to clean and lemmatize the string with token limit
 def clean_string(text, max_tokens, stem='Spacy'):
     lemmatizer = WordNetLemmatizer()
-    clean_text = re.sub(r'\s+', ' ', text)
-    tokenized_text = word_tokenize(clean_text)
-    truncated_tokens = tokenized_text[:max_tokens]
-    truncated_text = ' '.join([lemmatizer.lemmatize(word) for word in truncated_tokens if word not in stop_words])
-    return truncated_text
+    paragraphs = text.split('\n')  # Split text into paragraphs
+    clean_paragraphs = []
+    for paragraph in paragraphs:
+        clean_text = re.sub(r'\s+', ' ', paragraph)
+        tokenized_text = word_tokenize(clean_text)
+        truncated_tokens = tokenized_text[:max_tokens]
+        truncated_text = ' '.join([lemmatizer.lemmatize(word) for word in truncated_tokens if word not in stop_words])
+        clean_paragraphs.append(truncated_text)
+    cleaned_text = '\n\n'.join(clean_paragraphs)  # Join paragraphs with double line breaks
+    return cleaned_text
 
 # Function to sort out Emotional Labels
 def sort_emo(result):
@@ -157,27 +168,41 @@ def create_reduced_emotions(emotion_lists):
             
     return reduced_emotions
 
-# Function to generate the highlighted HTML text
 def generate_html_with_highlights(text, emotions):
-    # Split text into words and punctuation marks
-    word_pattern = re.compile(r'\w+|[^\w\s]')
-    tokens = word_pattern.findall(text)
-
-    highlighted_tokens = []
-    for i, token in enumerate(tokens):
-        if any(token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list for word_list in emotions.values()):
-            for emotion, word_list in emotions.items():
-                if token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list:
-                    highlighted_tokens.append(f'<mark style="background-color:{emotion_colors[emotion]}">{token}</mark>')
-                    break
-        else:
-            highlighted_tokens.append(token)
-
-        # Add space after the token if it's not the last token and the next token is not a punctuation mark
-        if i < len(tokens) - 1 and not re.match(r'[^\w\s]', tokens[i+1]):
-            highlighted_tokens.append(' ')
-
-    highlighted_text = ''.join(highlighted_tokens)
+    # Split text into paragraphs
+    paragraphs = text.split('\n')
+    highlighted_paragraphs = []
+    for paragraph in paragraphs:
+        # Split each paragraph into lines
+        lines = paragraph.splitlines()
+        highlighted_lines = []
+        for line in lines:
+            # Split each line into words and punctuation marks
+            word_pattern = re.compile(r'\w+|[^\w\s]')
+            tokens = word_pattern.findall(line)
+            highlighted_tokens = []
+            for i, token in enumerate(tokens):
+                if token == "'" and i < len(tokens) - 1 and not re.match(r'[^\w\s]', tokens[i + 1]):
+                    # Skip adding space after apostrophe if the next token is not a punctuation mark
+                    highlighted_tokens.append(token)
+                elif any(
+                    token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list
+                    for word_list in emotions.values()
+                ):
+                    for emotion, word_list in emotions.items():
+                        if token.lower() in word_list or token.capitalize() in word_list or token.upper() in word_list:
+                            highlighted_tokens.append(
+                                f'<mark style="background-color:{emotion_colors[emotion]}">{token}</mark>'
+                            )
+                            break
+                else:
+                    highlighted_tokens.append(token)
+                # Add space after the token if it's not the last token and the next token is not a punctuation mark
+                if i < len(tokens) - 1 and not re.match(r'[^\w\s]', tokens[i + 1]) and token != "'":
+                    highlighted_tokens.append(' ')
+            highlighted_lines.append(''.join(highlighted_tokens))
+        highlighted_paragraphs.append('\n'.join(highlighted_lines))
+    highlighted_text = '\n'.join(highlighted_paragraphs)
     return highlighted_text
 
 #================================================================================================================================#
@@ -185,7 +210,7 @@ def generate_html_with_highlights(text, emotions):
 # Route for the main page
 @app.route('/')
 def page():
-    return render_template('testing.html')
+    return render_template('test.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
