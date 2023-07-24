@@ -128,6 +128,26 @@ th {
     margin-left: 5px;
 }
 
+/* Highlighting Area */
+.rewrite-text-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #f7f7f7;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    margin-left: 262px;
+    margin-right: 214px;
+}
+
+#rewritten-text {
+    font-family: 'Lato', sans-serif;
+    font-size: large;
+}
+
 /* Footer */
 footer {
     margin-top: auto;

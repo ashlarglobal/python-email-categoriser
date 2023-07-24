@@ -1,29 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("analyze-btn").addEventListener("click", analyzeEmail);
     document.getElementById("highlight-btn").addEventListener("click", highlightText);
+    document.getElementById("rewrite-btn").addEventListener("click", rewriteText);
 });
 
 function analyzeEmail() {
     var email = document.getElementById("email").value;
     var analyzeBtn = document.getElementById("analyze-btn");
+
     // Add the loading animation class
     analyzeBtn.value = 'Loading...';
     analyzeBtn.disabled = true;
+
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/predict", true);
     xhr.setRequestHeader("Content-Type", "application/json");
+    
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             var response = JSON.parse(xhr.responseText);
             var resultBoxSection = document.getElementById("result-box-section");
-            var predictionText = response.prediction[0] === 1 ? '<span style="color: red;">Spam</span>' : '<span style="color: green;">Not Spam</span>';
+
+            var predictionText = response.prob > 0.7 ? '<span style="color: red;">Spam</span>' : '<span style="color: green;">Not Spam</span>';
             var spamProbability = response.percentage;
             var wordCount = response.result;
             var emoData = response.emo_data;
+
             // Update the HTML content
             resultBoxSection.innerHTML =
                 "<h5>Prediction: " + predictionText + "</h5>" +
-                "<h5>Spam Probability: </h5>" +
+                "<h5>Spam Probability: " + spamProbability + " %</h5>" +
                 "<div class='progress-bar'>" +
                 "<div class='progress' id='progress-bar'></div>" +
                 "</div>" +
@@ -32,6 +38,7 @@ function analyzeEmail() {
                 "<br>" +
                 "<h5>Emotional Analysis:</h5>" +
                 "<canvas id='emoChart'></canvas>";
+                
             // Remove the loading animation class
             analyzeBtn.value = 'Analyze';
             analyzeBtn.disabled = false;
@@ -103,6 +110,29 @@ function highlightText() {
             // Remove the loading animation class
             highlightBtn.value = 'Highlight';
             highlightBtn.disabled = false;
+        }
+    };
+    xhr.send(JSON.stringify({ email: email }));
+}
+
+function rewriteText() {
+    var email = document.getElementById("email").value;
+    var rewriteBtn = document.getElementById("rewrite-btn");
+
+    rewriteBtn.value = 'Loading...';
+    rewriteBtn.disabled = true;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/rewrite_text", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var rewriteText = document.getElementById("rewritten-text");
+            rewriteText.innerHTML = xhr.responseText;
+            // Remove the loading animation class
+            rewriteBtn.value = 'Rewrite';
+            rewriteBtn.disabled = false;
         }
     };
     xhr.send(JSON.stringify({ email: email }));

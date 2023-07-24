@@ -8,6 +8,8 @@ import os
 import string
 import warnings
 import json
+import openai
+
 warnings.filterwarnings("ignore")
 
 # Filter out the NumPy warning
@@ -25,6 +27,14 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from bs4 import BeautifulSoup
 from transformers import TFRobertaForSequenceClassification, pipeline, RobertaTokenizerFast
+
+#================================================================================================================================#
+
+# Open AI API credentials
+
+openai.organization = "org-Mxog9FEl1VKCPiWlIffJcc0o"
+api_key = "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"
+openai.api_key = api_key
 
 #================================================================================================================================#
 
@@ -205,12 +215,51 @@ def generate_html_with_highlights(text, emotions):
     highlighted_text = '\n'.join(highlighted_paragraphs)
     return highlighted_text
 
+# Calling the OpenAI API to get the chatbot's response using the chat completions endpoint
+def get_chatbot_response(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Use the GPT-3.5 Turbo model
+        messages=[
+            {"role": "system", "content": input_prompt},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=1.6,  # Controls the randomness of the output. Higher values make it more random.
+        max_tokens=700,  # Limits the maximum number of tokens in the response.
+        top_p=1.0,  # Nucleus sampling: Selects from the top 80% of tokens based on probability.
+        frequency_penalty=0.1,  # Adjusts the likelihood of the model repeating the same response.
+        presence_penalty=0.4  # Adjusts the likelihood of the model exploring new responses.
+    )
+    # Extract the chatbot's reply from the API response
+    chatbot_reply = response['choices'][0]['message']['content']
+    return chatbot_reply
+
+#================================================================================================================================#
+
+# Permanent input prompt
+input_prompt = """You are the "World's Best Non-Spam Email Rewriter" tasked with rewriting an email to reduce the likelihood of it being marked as "SPAM".
+
+To avoid spam content, please avoid the following:
+
+- Exaggerated claims: Statements that are not supported by evidence or that are simply too good to be true.
+- Sleazy or pushy language: Language that is designed to manipulate or pressure the recipient into taking action.
+- Artificial urgency: Statements that create a sense of urgency, such as "limited time offer" or "act now."
+- Cheapening the offer: Statements that make the offer seem less valuable, such as "free" or "win."
+- Sounding too good to be true: Statements that are so good that they seem unrealistic.
+- Ethical or legal concerns: Statements that could be considered unethical or illegal.
+- Common spam words: Words that are commonly associated with spam, such as "money," "free," and "win."
+
+The rewritten email should be clear, concise, and professional. It should also be relevant to the recipient and provide genuine value.
+
+Please provide the email you want to be rewritten, and remember to keep these guidelines in mind to minimize any spam-like content. 
+Also, make sure NOT to include the emails subject line.
+"""
+
 #================================================================================================================================#
 
 # Route for the main page
 @app.route('/')
 def page():
-    return render_template('test.html')
+    return render_template('testing.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -237,7 +286,7 @@ def predict():
             my_prediction = model.predict(string_vectorized)
             my_prediction = my_prediction.tolist()  # Convert ndarray to list
             probability = model.predict_proba(string_vectorized)[0][1]
-            percentage = round(probability * 100, 2)
+            percentage_spam = round(probability * 100, 2)
 
             # Capitalize emotion labels
             capitalized_labels = []
@@ -257,7 +306,8 @@ def predict():
             # Return the result box HTML content as JSON
             return json.dumps({
                 'prediction': my_prediction,
-                'percentage': percentage,
+                'prob': probability,
+                'percentage': percentage_spam,
                 'result': count_of_words,
                 'emo_data': list(emo_data)
             })
@@ -274,6 +324,13 @@ def highlight_text():
         highlighted_text = generate_html_with_highlights(email, reduced_emotions)
         
         return highlighted_text
+
+@app.route('/rewrite_text', methods=['POST'])
+def rewrite_text():
+    if request.method == 'POST':
+        email = request.json['email']
+        rewritten_email = get_chatbot_response(email)
+        return rewritten_email
 
 # Handle cases where the request method is not POST 
 if __name__ == '__main__': 
