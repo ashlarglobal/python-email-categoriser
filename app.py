@@ -1,3 +1,4 @@
+import cgi
 import spacy
 import nltk
 import pandas as pd
@@ -29,13 +30,18 @@ from bs4 import BeautifulSoup
 from transformers import TFRobertaForSequenceClassification, pipeline, RobertaTokenizerFast
 
 #================================================================================================================================#
+def read_api_key_from_file(file_path):
+    with open(file_path, 'r') as file:
+        api_key = file.read().strip()
+    return api_key
 
-# Open AI API credentials
-api_key = 12345
+# Assuming api_key.txt is in the same directory as the script
+file_path = 'api_key.txt'
+api_key = read_api_key_from_file(file_path)
+
+# Rest of the code remains the same
 openai.organization = "org-Mxog9FEl1VKCPiWlIffJcc0o"
-api_key = api_key
 openai.api_key = api_key
-
 #================================================================================================================================#
 
 # Flask app initialization

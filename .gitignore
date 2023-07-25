@@ -4,3 +4,4 @@ templates/
 templateFiles/testing.html
 staticFiles/testing.css
 staticFiles/testing.js
+api_key.txt
