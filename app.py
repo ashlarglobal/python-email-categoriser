@@ -31,9 +31,9 @@ from transformers import TFRobertaForSequenceClassification, pipeline, RobertaTo
 #================================================================================================================================#
 
 # Open AI API credentials
-
+api_key = 12345
 openai.organization = "org-Mxog9FEl1VKCPiWlIffJcc0o"
-api_key = "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"
+api_key = api_key
 openai.api_key = api_key
 
 #================================================================================================================================#
