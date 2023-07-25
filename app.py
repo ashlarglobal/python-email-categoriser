@@ -30,6 +30,8 @@ from bs4 import BeautifulSoup
 from transformers import TFRobertaForSequenceClassification, pipeline, RobertaTokenizerFast
 
 #================================================================================================================================#
+# OpenAI Credentials
+
 def read_api_key_from_file(file_path):
     with open(file_path, 'r') as file:
         api_key = file.read().strip()
@@ -105,6 +107,19 @@ def truncate_text(text, max_tokens):
     encoded_text = tokenizer(text, truncation=True, max_length=max_tokens, padding='longest')
     truncated_text = tokenizer.decode(encoded_text['input_ids'][0], skip_special_tokens=True)
     return truncated_text
+
+def clean_string(text, max_tokens, stem='Spacy'):
+    lemmatizer = WordNetLemmatizer()
+    paragraphs = text.split('\n')  # Split text into paragraphs
+    clean_paragraphs = []
+    for paragraph in paragraphs:
+        clean_text = re.sub(r'\s+', ' ', paragraph)
+        tokenized_text = word_tokenize(clean_text)
+        truncated_tokens = tokenized_text[:max_tokens]
+        truncated_text = ' '.join([lemmatizer.lemmatize(word) for word in truncated_tokens if word not in stop_words])
+        clean_paragraphs.append(truncated_text)
+    cleaned_text = '\n\n'.join(clean_paragraphs)  # Join paragraphs with double line breaks
+    return cleaned_text
 
 def clean_string(text, max_tokens, stem='Spacy'):
     lemmatizer = WordNetLemmatizer()
@@ -229,7 +244,7 @@ def get_chatbot_response(prompt):
             {"role": "system", "content": input_prompt},
             {"role": "user", "content": prompt}
         ],
-        temperature=1.6,  # Controls the randomness of the output. Higher values make it more random.
+        temperature=1.4,  # Controls the randomness of the output. Higher values make it more random.
         max_tokens=700,  # Limits the maximum number of tokens in the response.
         top_p=1.0,  # Nucleus sampling: Selects from the top 80% of tokens based on probability.
         frequency_penalty=0.1,  # Adjusts the likelihood of the model repeating the same response.
@@ -257,7 +272,7 @@ To avoid spam content, please avoid the following:
 The rewritten email should be clear, concise, and professional. It should also be relevant to the recipient and provide genuine value.
 
 Please provide the email you want to be rewritten, and remember to keep these guidelines in mind to minimize any spam-like content. 
-Also, make sure NOT to include the emails subject line.
+Also, make sure NOT to include the emails subject line and DO NOT HALLUCINATE.
 """
 
 #================================================================================================================================#
@@ -265,7 +280,7 @@ Also, make sure NOT to include the emails subject line.
 # Route for the main page
 @app.route('/')
 def page():
-    return render_template('testing.html')
+    return render_template('test.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -335,7 +350,16 @@ def highlight_text():
 def rewrite_text():
     if request.method == 'POST':
         email = request.json['email']
-        rewritten_email = get_chatbot_response(email)
+        probability = 1.0  # Initialize probability to a value greater than 0.7
+        rewritten_email = email  # Set a default value for the rewritten email
+
+        while probability >= 0.7:
+            rewritten_email = get_chatbot_response(email)
+            clean_text = clean_html(rewritten_email)
+            processed_text = clean_string(clean_text, max_tokens=512)
+            string_vectorized = vectorizer.transform([processed_text])
+            probability = model.predict_proba(string_vectorized)[0][1]  # Convert ndarray to list
+
         return rewritten_email
 
 # Handle cases where the request method is not POST 
