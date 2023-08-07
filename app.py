@@ -1,4 +1,3 @@
-import cgi
 import spacy
 import nltk
 import pandas as pd
@@ -107,19 +106,6 @@ def truncate_text(text, max_tokens):
     encoded_text = tokenizer(text, truncation=True, max_length=max_tokens, padding='longest')
     truncated_text = tokenizer.decode(encoded_text['input_ids'][0], skip_special_tokens=True)
     return truncated_text
-
-def clean_string(text, max_tokens, stem='Spacy'):
-    lemmatizer = WordNetLemmatizer()
-    paragraphs = text.split('\n')  # Split text into paragraphs
-    clean_paragraphs = []
-    for paragraph in paragraphs:
-        clean_text = re.sub(r'\s+', ' ', paragraph)
-        tokenized_text = word_tokenize(clean_text)
-        truncated_tokens = tokenized_text[:max_tokens]
-        truncated_text = ' '.join([lemmatizer.lemmatize(word) for word in truncated_tokens if word not in stop_words])
-        clean_paragraphs.append(truncated_text)
-    cleaned_text = '\n\n'.join(clean_paragraphs)  # Join paragraphs with double line breaks
-    return cleaned_text
 
 def clean_string(text, max_tokens, stem='Spacy'):
     lemmatizer = WordNetLemmatizer()

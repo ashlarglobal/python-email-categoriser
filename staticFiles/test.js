@@ -1,44 +1,39 @@
+// Event Listeners Function
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("analyze-btn").addEventListener("click", analyzeEmail);
     document.getElementById("highlight-btn").addEventListener("click", highlightText);
     document.getElementById("rewrite-btn").addEventListener("click", rewriteText);
+    document.getElementById("reanalysis-btn").addEventListener("click", reanalyzeEmail);
 });
 
+// Analyze Function
 function analyzeEmail() {
     var email = document.getElementById("email").value;
     var analyzeBtn = document.getElementById("analyze-btn");
-
     // Add the loading animation class
     analyzeBtn.value = 'Loading...';
     analyzeBtn.disabled = true;
-
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/predict", true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             var response = JSON.parse(xhr.responseText);
             var resultBoxSection = document.getElementById("result-box-section");
-
             var predictionText = response.prob > 0.7 ? '<span style="color: red;">Spam</span>' : '<span style="color: green;">Not Spam</span>';
             var spamProbability = response.percentage;
             var wordCount = response.result;
             var emoData = response.emo_data;
-
             // Update the HTML content
             resultBoxSection.innerHTML =
                 "<h5>Prediction: " + predictionText + "</h5>" +
                 "<h5>Spam Probability: " + spamProbability + " %</h5>" +
-                "<div class='progress-bar'>" +
-                "<div class='progress' id='progress-bar'></div>" +
-                "</div>" +
+                "<div class='progress-bar'>" + "<div class='progress' id='progress-bar'></div>" + "</div>" +
                 "<br>" +
                 "<h5>Word Count: " + wordCount + "</h5>" +
                 "<br>" +
                 "<h5>Emotional Analysis:</h5>" +
                 "<canvas id='emoChart'></canvas>";
-                
             // Remove the loading animation class
             analyzeBtn.value = 'Analyze';
             analyzeBtn.disabled = false;
@@ -57,6 +52,7 @@ function analyzeEmail() {
     xhr.send(JSON.stringify({ email: email }));
 }
 
+// Piechart Function
 function createEmoChart(emoData) {
     var labels = emoData.map(function (data) {
         return data[0];
@@ -93,7 +89,7 @@ function createEmoChart(emoData) {
     }
 }
 
-
+// Highlight Function
 function highlightText() {
     var email = document.getElementById("email").value;
     var highlightBtn = document.getElementById("highlight-btn");
@@ -115,12 +111,15 @@ function highlightText() {
     xhr.send(JSON.stringify({ email: email }));
 }
 
+// Rewrite Function
 function rewriteText() {
     var email = document.getElementById("email").value;
     var rewriteBtn = document.getElementById("rewrite-btn");
+    var reanalysisBtn = document.getElementById("reanalysis-btn"); // New line
 
     rewriteBtn.value = 'Loading...';
     rewriteBtn.disabled = true;
+    reanalysisBtn.disabled = true; // New line
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/rewrite_text", true);
@@ -128,12 +127,24 @@ function rewriteText() {
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            var rewriteText = document.getElementById("rewritten-text");
-            rewriteText.innerHTML = xhr.responseText;
-            // Remove the loading animation class
+            var rewrittenText = document.getElementById("rewritten-text");
+            rewrittenText.innerHTML = xhr.responseText;
             rewriteBtn.value = 'Rewrite';
             rewriteBtn.disabled = false;
+            reanalysisBtn.disabled = false; // New line
+            analyzeEmail(); // Trigger the Analyze functionality
         }
     };
     xhr.send(JSON.stringify({ email: email }));
+}
+
+// Reanalysis Function
+function reanalyzeEmail() {
+    var rewrittenText = document.getElementById("rewritten-text").innerText;
+    document.getElementById("email").value = rewrittenText;
+    var rewrittenText = document.getElementById("rewritten-text");
+    rewrittenText.innerHTML = '';
+    var highlightedText = document.getElementById("highlighted-text");
+    highlightedText.innerHTML = '';
+    analyzeEmail(); // Trigger the Analyze functionality
 }
