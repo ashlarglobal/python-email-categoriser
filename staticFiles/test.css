@@ -214,11 +214,21 @@ tr td:hover {
     background-position: 1260% 65%;
 }
 
-.question-answer__accordion>.answer {
+.highlight-question-answer__accordion>.highlight-answer {
     display: none;
 }
 
-.active>.answer {
+.active>.highlight-answer {
+    display: block;
+    padding-bottom: 1.3rem;
+    color: var(--darkGrayBlue);
+}
+
+.rewrite-question-answer__accordion>.rewrite-answer {
+    display: none;
+}
+
+.active>.rewrite-answer {
     display: block;
     padding-bottom: 1.3rem;
     color: var(--darkGrayBlue);
