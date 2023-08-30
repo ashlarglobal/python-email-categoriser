@@ -99,10 +99,19 @@ function highlightText() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/highlight_text", true);
     xhr.setRequestHeader("Content-Type", "application/json");
+
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             var highlightedText = document.getElementById("highlighted-text");
             highlightedText.innerHTML = xhr.responseText;
+            const questions = document.querySelectorAll(".question");
+
+            var divElement = document.getElementById("rewrite");
+            divElement.classList.remove("active");
+        
+            var divElement = document.getElementById("highlight-question-answer__accordion");
+            divElement.classList.add("active");
+
             // Remove the loading animation class
             highlightBtn.value = 'Highlight';
             highlightBtn.disabled = false;
@@ -120,7 +129,7 @@ function rewriteText() {
     rewriteBtn.value = 'Loading...';
     rewriteBtn.disabled = true;
     reanalysisBtn.disabled = true; // New line
-
+    
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/rewrite_text", true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -130,11 +139,19 @@ function rewriteText() {
             var rewrittenText = document.getElementById("rewritten-text");
             rewrittenText.innerHTML = xhr.responseText;
             rewriteBtn.value = 'Rewrite';
+            
+            var divElement = document.getElementById("highlight-question-answer__accordion");
+            divElement.classList.remove("active");
+        
+            var divElement = document.getElementById("rewrite");
+            divElement.classList.add("active");
+
             rewriteBtn.disabled = false;
             reanalysisBtn.disabled = false; // New line
             analyzeEmail(); // Trigger the Analyze functionality
         }
     };
+
     xhr.send(JSON.stringify({ email: email }));
 }
 
@@ -146,5 +163,9 @@ function reanalyzeEmail() {
     rewrittenText.innerHTML = '';
     var highlightedText = document.getElementById("highlighted-text");
     highlightedText.innerHTML = '';
+    var divElement = document.getElementById("rewrite");
+    divElement.classList.remove("active");
+    var divElement = document.getElementById("highlight-question-answer__accordion");
+    divElement.classList.remove("active");
     analyzeEmail(); // Trigger the Analyze functionality
 }

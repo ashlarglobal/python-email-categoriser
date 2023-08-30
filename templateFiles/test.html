@@ -105,7 +105,7 @@
     </section>
 
     <section class="highlight-texts">
-        <div class="highlight-question-answer__accordion">
+        <div class="highlight-question-answer__accordion" id="highlight-question-answer__accordion">
             <div class="question">
                 <h3 class="title__question">
                     Emotion Highlighting
@@ -119,16 +119,13 @@
                             Emotion Highlighting</h3>
                         <br />
                         <pre id="highlighted-text" style="white-space: pre-wrap">{{ highlighted_text }}</pre>
-                        </div>
                     </div>
-                </section>
             </div>
-        </div>
     </section>
 
     <section class="highlight-texts">
-        <div class="rewrite-question-answer__accordion">
-            <div class="question">
+        <div class="rewrite-question-answer__accordion" id="rewrite">
+            <div class="question1">
                 <h3 class="title__question">
                     Rewrite Text
                 </h3>
@@ -141,16 +138,10 @@
                             Rewrite Text</h3>
                         <br />
                         <pre id="rewritten-text" style="white-space: pre-wrap;">{{ rewrite_text }}</pre>
-                        </div>
-                        <input type="button" id="reanalysis-btn" value="Reanalysis" class="btn btn-info"
-                            style="display: inline-block; width: 100px" />
                     </div>
-                </section>
+                    <input type="button" id="reanalysis-btn" value="Reanalysis" class="btn btn-info"
+                        style="display: inline-block; width: 100px" />
             </div>
-        </div>
-    </section>
-    </div>
-    </div>
     </section>
 
     <footer class="py-3 mt-4 bg-dark">
@@ -178,17 +169,27 @@
 
     <script>
         this.addEventListener("DOMContentLoaded", () => {
-            const highlightQuestion = document.querySelector(".highlight-question-answer__accordion .question");
-            const rewriteQuestion = document.querySelector(".rewrite-question-answer__accordion .question");
-
-            highlightQuestion.addEventListener("click", () => {
-                highlightQuestion.parentNode.classList.toggle("active");
-            });
-
-            rewriteQuestion.addEventListener("click", () => {
-                rewriteQuestion.parentNode.classList.toggle("active");
-            });
-        });
+            const questions = document.querySelectorAll(".question")
+            const questions1 = document.querySelectorAll(".question1")
+            questions.forEach((question) => question.addEventListener("click", () => {
+                if (question.parentNode.classList.contains("active")) {
+                    question.parentNode.classList.toggle("active")
+                }
+                else {
+                    questions.forEach(question => question.parentNode.classList.remove("active"))
+                    question.parentNode.classList.add("active")
+                }
+            }))
+            questions1.forEach((question) => question.addEventListener("click", () => {
+                if (question.parentNode.classList.contains("active")) {
+                    question.parentNode.classList.toggle("active")
+                }
+                else {
+                    questions1.forEach(question => question.parentNode.classList.remove("active"))
+                    question.parentNode.classList.add("active")
+                }
+            }))
+        })
 
     </script>
 </body>
